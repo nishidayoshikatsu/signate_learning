@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import GridSearchCV
 
 features = {
         "id":                       "int",
@@ -33,12 +34,43 @@ print("complete reading data")
 df_train = df_train.drop(["account_age_hours", "friends_count", "mean_tweet_length"], axis=1)
 df_test = df_test.drop(["account_age_hours", "friends_count", "mean_tweet_length"], axis=1)
 
+def min_max(n):
+    n_min = np.min(n)
+    n_max = np.max(n)
+    result = (n - n_min)/(n_max - n_min)
+    return result
+
+### 前処理 ###
+df_train["favourites_count"] = min_max(df_train["favourites_count"])
+df_train["listed_count"] = min_max(df_train["listed_count"])
+df_train["mean_retweets"] = min_max(df_train["mean_retweets"])
+
 ### 学習 ###
 
 # X_train、Y_train、X_testを作成
 X_train = df_train.drop(["bot"], axis=1)   # 学習データ
 Y_train = df_train["bot"]                  # 教師データ
 X_test  = df_test
+
+"""
+param_grid = {
+        "max_depth": [2,3, None],
+        "n_estimators":[50,100,200,500],
+        "max_features": [1, 3, 10],
+        "min_samples_split": [2, 3, 10],
+        "min_samples_leaf": [1, 3, 10],
+        "bootstrap": [True, False],
+        "criterion": ["gini", "entropy"]
+}
+
+forest = GridSearchCV(
+                estimator=RandomForestClassifier(random_state=0),
+                param_grid = param_grid,   
+                scoring="accuracy",  #metrics
+                cv = 3,              #cross-validation
+                n_jobs = 1          #number of core
+                )
+"""
 
 # 学習
 forest = RandomForestClassifier()

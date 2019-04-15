@@ -2,6 +2,8 @@
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
 
 # dataの読み込み
 df_train = pd.read_table("./data/train.tsv")
@@ -19,6 +21,10 @@ X_test  = df_test
 forest = RandomForestClassifier()
 forest.fit(X_train, Y_train)
 Y_pred = forest.predict(X_test)
+
+print(cross_val_score(forest, X_train, Y_train, cv=50))        # そのまま分割
+stratifiedkfold = StratifiedKFold(n_splits=50)                   # 層化分割
+print('Cross-validation scores: \n{}'.format(cross_val_score(forest, X_train, Y_train, cv=stratifiedkfold)))
 
 # 提出データの作成
 submission = pd.DataFrame({
